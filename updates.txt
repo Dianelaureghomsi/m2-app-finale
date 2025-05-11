@@ -1,0 +1,8 @@
+- Ajouter le planing de l'enfant (Attendre le fichier de Diane (image)).
+- Ajouter l'envoie de requete a un enseignant de son choix.
+- Admin peut envoyer un fichier au parent (Attendre le fichier de Diane (pdf)).
+- Envoie de notification (email, sms, whatsapp). ✅
+- Modifier creatorId en fullname, et remplacer par le nom du createur de la notification
+- Modifier Banner.tsx et ajouter un degrade de couleur. 
+
+✅

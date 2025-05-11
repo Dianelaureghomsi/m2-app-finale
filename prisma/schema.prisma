@@ -1,0 +1,116 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider      = "prisma-client-js"
+  output        = "../src/generated/prisma"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgres"
+  url      = env("NEXT_DATABASE_URL")
+}
+
+model Note {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String
+  fileUrl   String?
+  fileName  String?
+  fileType  String?
+  fileSize  Int?
+  author    User?    @relation(fields: [authorId], references: [id])
+  authorId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id        String   @id @default(uuid())
+  fullname  String
+  email     String   @unique
+  password  String
+  phone     String?
+  role      Role
+  createdAt DateTime @default(now())
+
+  eleves            Eleve[]        @relation("ParentEleves")
+  requests          Request[]      @relation("ParentRequests")
+  sentNotifications Notification[] @relation("SentNotifications")
+  sentMessages      Message[]      @relation("SentMessages")
+  notes     Note[]
+}
+
+model Eleve {
+  id        String       @id @default(uuid())
+  fullname  String
+  parentId  String
+  classe    ListeClasses
+  createdAt DateTime     @default(now())
+
+  parent User @relation("ParentEleves", fields: [parentId], references: [id])
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  content   String
+  senderId  String
+  createdAt DateTime @default(now())
+  filePath  String   @default("")
+
+  sender User @relation("SentMessages", fields: [senderId], references: [id])
+}
+
+model Request {
+  id        String   @id @default(uuid())
+  message   String
+  createdAt DateTime @default(now())
+  parentId  String
+
+  parent User @relation("ParentRequests", fields: [parentId], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  title     String
+  message   String
+  subject   Subjects
+  createdAt DateTime @default(now())
+  creatorId String
+  filePath  String   @default("")
+
+  creator User @relation("SentNotifications", fields: [creatorId], references: [id])
+
+  // Relations for targeted parents and classes
+  targetedParents String[]
+  targetedClasses String[]
+}
+
+enum Subjects {
+  RESULTAT
+  ABSENCE
+  COMPORTEMENT
+  EVENEMENT
+  EXCLUSION
+}
+
+enum Role {
+  ADMIN
+  PARENT
+  ENSEIGNANT
+}
+
+enum ListeClasses {
+  SIXIEME
+  CINQUIEME
+  QUATRIEME
+  TROISIEME
+  SECONDE
+  PREMIERE
+  TERMINALE
+  ALL
+}
