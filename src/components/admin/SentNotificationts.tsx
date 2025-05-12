@@ -18,7 +18,7 @@ export function SentNotifications() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/notifications/sent") // à créer
+    fetch("/api/events") // à créer
       .then((res) => res.json())
       .then((data) => setNotifications(data.notifications || []))
       .finally(() => setLoading(false));

@@ -65,8 +65,9 @@ export async function GET() {
         creator: true,
       },
     });
-
+    console.log({notifications});
     return NextResponse.json({ notifications });
+    
   } catch (error){
     console.error("Erreur serveur:", error);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });

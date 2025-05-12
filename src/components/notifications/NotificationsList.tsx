@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { NoData } from "../NoData";
-//import { Notification } from "@/src/generated/prisma";
+import { Notification } from "@/src/generated/prisma";
 import { Button } from "../Button";
 import { Eye } from "lucide-react";
 import Link from "next/link";
@@ -23,7 +23,7 @@ type Notif = {
 
 
 export function NotificationList() {
-  const [notifications, setNotifications] = useState<Notif[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
@@ -33,8 +33,8 @@ export function NotificationList() {
         const response = await fetch("/api/events");
         const data = await response.json();
 
-        console.log("data", data);
-        setNotifications(data.events || []);
+        console.log("data new", data);
+        setNotifications(data.notifications || []);
       } catch (error) {
         console.error(
           "Erreur lors de la récupération des notifications :",
@@ -62,7 +62,7 @@ export function NotificationList() {
             <th className="px-4 py-2">Sujet</th>
             <th className="px-4 py-2">Contenu</th>
             <th className="px-4 py-2">Date</th>
-            <th className="px-4 py-2">Fichier</th> {/* ✅ nouvelle colonne */}
+            <th className="px-4 py-2">Fichier</th>
             <th className="px-4 py-2">Action</th>
           </tr>
         </thead>
@@ -78,7 +78,6 @@ export function NotificationList() {
                 {new Date(notif.createdAt).toLocaleDateString()}
               </td>
               
-              {/* ✅ Colonne Fichier */}
               <td className="px-4 py-2">
                 {notif.filePath ? (
                   <a

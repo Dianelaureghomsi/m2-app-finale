@@ -47,13 +47,14 @@ export function NotificationSection({
     fetch("/api/events")
       .then((res) => res.json())
       .then((data) => {
+        console.log({data});
         if (!(type === "global")) {
-          const filteredNotifications = data.events.filter(
+          const filteredNotifications = data?.notifications?.filter(
             (e: Notification) => e.creatorId === user.id
           );
           setNotifications(filteredNotifications);
         } else {
-          setNotifications(data.events || []);
+          setNotifications(data.notifications || []);
         }
         setLoading(false);
       });
