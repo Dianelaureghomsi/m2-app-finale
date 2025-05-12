@@ -2,14 +2,28 @@
 
 import { useEffect, useState } from "react";
 import { NoData } from "../NoData";
-import { Notification } from "@/src/generated/prisma";
+//import { Notification } from "@/src/generated/prisma";
 import { Button } from "../Button";
 import { Eye } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/src/hooks/useAuth";
 
+type Notif = {
+  id: string;
+  title: string;
+  message: string;
+  subject: string;
+  createdAt: string;
+  filePath?: string;
+  creator: {
+    fullname: string;
+    id: string;
+  };
+};
+
+
 export function NotificationList() {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<Notif[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
@@ -48,6 +62,7 @@ export function NotificationList() {
             <th className="px-4 py-2">Sujet</th>
             <th className="px-4 py-2">Contenu</th>
             <th className="px-4 py-2">Date</th>
+            <th className="px-4 py-2">Fichier</th> {/* ✅ nouvelle colonne */}
             <th className="px-4 py-2">Action</th>
           </tr>
         </thead>
@@ -62,10 +77,25 @@ export function NotificationList() {
               <td className="px-4 py-2">
                 {new Date(notif.createdAt).toLocaleDateString()}
               </td>
+              
+              {/* ✅ Colonne Fichier */}
               <td className="px-4 py-2">
-                <Link
-                  href={`/m2/dashboard/${user.role.toLowerCase()}/${notif.id}`}
-                >
+                {notif.filePath ? (
+                  <a
+                    href={notif.filePath}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline"
+                  >
+                    Voir le fichier
+                  </a>
+                ) : (
+                  <span className="text-gray-400">—</span>
+                )}
+              </td>
+
+              <td className="px-4 py-2">
+                <Link href={`/m2/dashboard/${user.role.toLowerCase()}/${notif.id}`}>
                   <Button>
                     <div className="text-sm text-white flex items-center px-2 space-x-2">
                       <Eye className="size-4" />

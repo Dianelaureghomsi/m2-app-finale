@@ -1,80 +1,74 @@
-import { IncomingForm } from "formidable";
-import fs from "fs";
-import path from "path";
+// /app/api/events/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import fs from "fs/promises";
+import path from "path";
 import { Subjects } from "@/src/generated/prisma";
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
 export async function POST(req: Request) {
-  const form = new IncomingForm({ keepExtensions: true });
+  const formData = await req.formData();
 
-  return new Promise((resolve) => {
-    form.parse(req as any, async (err, fields, files) => {
-      if (err) {
-        console.error("Erreur formidable :", err);
-        return resolve(
-          NextResponse.json({ error: "Erreur de parsing du formulaire" }, { status: 500 })
-        );
-      }
+  const title = formData.get("title")?.toString();
+  const message = formData.get("message")?.toString();
+  const subject = formData.get("subject")?.toString() as Subjects;
+  const creatorId = formData.get("creatorId")?.toString();
+  const parentIds = formData.get("parentIds")?.toString(); // JSON string
+  const classes = formData.get("classes")?.toString(); // JSON string
+  const file = formData.get("file") as File;
 
-      const { title, message, subject, creatorId, parentIds, classes } = fields;
+  if (!title || !message || !subject || !creatorId || !parentIds || !classes) {
+    return NextResponse.json({ error: "Champs requis manquants" }, { status: 400 });
+  }
 
-      // Validation des champs requis
-      if (!title || !message || !subject || !creatorId || !parentIds || !classes) {
-        return resolve(
-          NextResponse.json({ error: "Champs requis manquants" }, { status: 400 })
-        );
-      }
+  let filePath = "";
 
-      const subjectValue = subject.toString().toUpperCase();
+  if (file && file.size > 0) {
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
 
-      if (!Object.values(Subjects).includes(subjectValue as Subjects)) {
-        return resolve(
-          NextResponse.json({ error: "Sujet invalide" }, { status: 400 })
-        );
-      }
+    const uploadDir = path.join(process.cwd(), "public/uploads");
+    await fs.mkdir(uploadDir, { recursive: true });
 
-      let filePath = "";
+    const fileName = `${Date.now()}_${file.name}`;
+    const fullPath = path.join(uploadDir, fileName);
+    await fs.writeFile(fullPath, buffer);
+    filePath = `/uploads/${fileName}`;
+  }
 
-      if (files.file && Array.isArray(files.file)) {
-        const file = files.file[0];
-        const uploadDir = path.join(process.cwd(), "public/uploads");
-
-        if (!fs.existsSync(uploadDir)) {
-          fs.mkdirSync(uploadDir, { recursive: true });
-        }
-
-        const fileName = `${Date.now()}_${file.originalFilename}`;
-        const fullPath = path.join(uploadDir, fileName);
-
-        fs.renameSync(file.filepath, fullPath);
-        filePath = `/uploads/${fileName}`;
-      }
-
-      try {
-        const notification = await prisma.notification.create({
-          data: {
-            title: title.toString(),
-            message: message.toString(),
-            subject: subjectValue as Subjects,
-            creator: { connect: { id: creatorId.toString() } },
-            targetedParents: JSON.parse(parentIds.toString()),
-            targetedClasses: JSON.parse(classes.toString()),
-            filePath,
-          },
-        });
-
-        return resolve(NextResponse.json({ success: true, notification }, { status: 201 }));
-      } catch (error) {
-        console.error("Erreur Prisma :", error);
-        return resolve(NextResponse.json({ error: "Erreur serveur" }, { status: 500 }));
-      }
+  try {
+    const notification = await prisma.notification.create({
+      data: {
+        title,
+        message,
+        subject,
+        filePath,
+        creator: {
+          connect: { id: creatorId },
+        },
+        targetedParents: JSON.parse(parentIds),
+        targetedClasses: JSON.parse(classes),
+      },
     });
-  });
+
+    return NextResponse.json({ success: true, notification }, { status: 201 });
+  } catch (error) {
+    console.error("Erreur Prisma :", error);
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+  }
+}
+
+export async function GET() {
+  try {
+    const notifications = await prisma.notification.findMany({
+      orderBy: { createdAt: "desc" },
+      include: {
+        creator: true,
+      },
+    });
+
+    return NextResponse.json({ notifications });
+  } catch (error){
+    console.error("Erreur serveur:", error);
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+  }
 }

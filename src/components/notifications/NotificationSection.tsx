@@ -44,7 +44,7 @@ export function NotificationSection({
 
   useEffect(() => {
     setLoading(true);
-    fetch("/api/events.ts")
+    fetch("/api/events")
       .then((res) => res.json())
       .then((data) => {
         if (!(type === "global")) {
@@ -98,8 +98,8 @@ export function NotificationSection({
     formData.append("parentIds", JSON.stringify(selectedParents));
     formData.append("classes", JSON.stringify(selectedClasses));
     if (file) formData.append("file", file);
-
-    const res = await fetch("/api/events.ts", {
+    console.log(formData.getAll)
+    const res = await fetch("/api/events", {
       method: "POST",
       body: formData,
     });
