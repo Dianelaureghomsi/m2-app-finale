@@ -208,7 +208,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\Pensezy Corporation\\Desktop\\m2-app-converted\\src\\generated\\prisma",
+      "value": "C:\\Users\\User HP\\M2-APP-CONVERTED\\src\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -226,7 +226,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\Pensezy Corporation\\Desktop\\m2-app-converted\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Users\\User HP\\M2-APP-CONVERTED\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
